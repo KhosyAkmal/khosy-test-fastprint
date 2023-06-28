@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('home');
-});
 
+Route::get('/', [ProductController::class, 'showProducts']);
 Route::get('/data-api', [ProductController::class, 'getDataFromAPI']);
