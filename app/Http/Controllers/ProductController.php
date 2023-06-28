@@ -187,7 +187,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Berhasil menambahkan produk'
+                'message' => 'Berhasil edit produk'
             ],200);
         } catch (\Throwable $th) {
             return response()->json([
