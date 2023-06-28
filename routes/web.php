@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ProductController::class, 'showProducts']);
 Route::get('/data-api', [ProductController::class, 'getDataFromAPI']);
+
+Route::post('/store/product',[ProductController::class, 'storeProduct'])->name('store.product');
+Route::post('/update/product/{id}',[ProductController::class, 'updateProduct'])->name('update.product');
+

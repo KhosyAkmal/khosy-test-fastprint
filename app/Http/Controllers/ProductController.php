@@ -55,6 +55,24 @@ class ProductController extends Controller
             ->editColumn('harga', function($item){
                 return 'Rp. '.number_format( $item->harga ,0,",",".");
             })
+            ->addColumn('action', function($item){
+                $render =
+                '
+                    <div class="d-flex">
+                        <button class="btn btn-warning btn-sm m-2 btn-action"
+                        data-action="update"
+                        data-id="'. $item->id_produk.'"
+                        data-nama="'.$item->nama_produk.'"
+                        data-kategori="'.$item->kategori.'"
+                        data-harga="'.$item->harga.'"
+                        >Edit</button>
+                        <button class="btn btn-danger btn-action btn-sm m-2" id="add-produk" data-action="add">Hapus</button>
+                    </div>
+                ';
+
+                return $render;
+            })
+            ->rawColumns(['action'])
             ->make(true);
         }
 
@@ -85,7 +103,7 @@ class ProductController extends Controller
                 'nama_produk' => $request->nama_produk,
                 'kategori' => $request->kategori,
                 'harga' => $request->harga,
-                'status' => $request->status
+                'status' => $request->status ?? 'bisa dijual'
             ]);
 
             return response()->json([
@@ -95,7 +113,7 @@ class ProductController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Berhasil menambahkan produk'
+                'message' => $th->getMessage()
             ],500);
         }
     }
@@ -128,7 +146,7 @@ class ProductController extends Controller
                 ],500);
             }
 
-            $produk = Product::find($id);
+            $produk = Product::firstwhere('id_produk',$id);
 
             if( !$produk ) {
                 return response()->json([
@@ -137,11 +155,11 @@ class ProductController extends Controller
                 ]);
             }
 
-            $produk->nama_produk = $request->nama_produk;
-            $produk->kategori = $request->kategori;
-            $produk->harga = $request->harga;
-            $produk->status = $request->status;
-            $produk->save();
+            $update = Product::where('id_produk', $id)->update([
+                'nama_produk'   => $request->nama_produk,
+                'kategori'      => $request->kategori,
+                'harga'         => $request->harga,
+            ]);
 
             return response()->json([
                 'status' => 200,
@@ -150,7 +168,7 @@ class ProductController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Berhasil menambahkan produk'
+                'message' => $th->getMessage()
             ],500);
         }
     }
@@ -165,7 +183,7 @@ class ProductController extends Controller
                 ]);
             }
 
-            $produk = Product::find($id);
+            $produk = Product::firstwhere('id_produk',$id);
             if( !$produk ) {
                 return response()->json([
                     'status' => 200,
