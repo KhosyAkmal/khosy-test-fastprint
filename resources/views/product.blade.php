@@ -177,5 +177,56 @@
             ajaxPost(url, data);
 
         });
+
+        $(document).on('click', '.btn-delete', function(){
+            Swal.fire({
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                },
+                title: 'Apakah anda yakin?',
+                text: "Apakah anda yakin ingin menghapus data ini?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var id = $(this).data("id");
+                    var token = $("meta[name='csrf-token']").attr("content");
+
+                    var url = "{{ route('destroy.product') }}"
+                    $.ajax({
+                        url: url,
+                        type: 'DELETE',
+                        data: {
+                            _token: token,
+                            id: id
+                        },
+                        error: function(err) {
+                            Swal.fire(
+                                'Error!',
+                                'Gagal',
+                                'error'
+                            );
+
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                customClass: {
+                                    confirmButton: 'btn btn-danger',
+                                },
+                                title: 'Success',
+                                text: "Data telah terhapus",
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+
+                            $('#table-produk').DataTable().ajax.reload();
+                        }
+                    });
+                    return false;
+                }
+            })
+        })
     </script>
 @endpush

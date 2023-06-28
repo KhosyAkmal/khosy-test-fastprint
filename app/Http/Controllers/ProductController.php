@@ -66,7 +66,7 @@ class ProductController extends Controller
                         data-kategori="'.$item->kategori.'"
                         data-harga="'.$item->harga.'"
                         >Edit</button>
-                        <button class="btn btn-danger btn-action btn-sm m-2" id="add-produk" data-action="add">Hapus</button>
+                        <button class="btn btn-danger btn-action btn-sm m-2 btn-delete" data-id="'. $item->id_produk .'" >Hapus</button>
                     </div>
                 ';
 
@@ -173,7 +173,7 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy(Request $request){
+    public function destroyProduct(Request $request){
         try {
             $id = $request->id;
             if( !$id ) {
@@ -183,7 +183,7 @@ class ProductController extends Controller
                 ]);
             }
 
-            $produk = Product::firstwhere('id_produk',$id);
+            $produk = Product::where('id_produk',$id)->delete();
             if( !$produk ) {
                 return response()->json([
                     'status' => 200,
@@ -191,7 +191,7 @@ class ProductController extends Controller
                 ]);
             }
 
-            $produk->delete();
+            // $produk->delete();
 
             return response()->json([
                 'status' => 200,
