@@ -3,7 +3,8 @@
 @section('content')
     <div class="d-flex justify-content-center mt-5 mb-5">
         <div class="col-10">
-            <div class="d-flex justify-content-end mb-5">
+            <div class="d-flex justify-content-between mb-5">
+                <button class="btn btn-success" id="get-data-api">Get Data From API</button>
                 <button class="btn btn-primary btn-action" id="add-produk" data-action="add">Tambah Produk</button>
             </div>
             <table id="table-produk" class="table table-striped"></table>
@@ -23,15 +24,15 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="">Nama Produk</label>
+                    <label for="">Nama Produk <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="nama_produk" id="nama_produk">
                 </div>
                 <div class="mb-3">
-                    <label for="">Kategori</label>
+                    <label for="">Kategori <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="kategori" id="kategori">
                 </div>
                 <div class="mb-3">
-                    <label for="">Harga</label>
+                    <label for="">Harga <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="harga" id="harga">
                 </div>
                 {{-- <div class="mb-3">
@@ -51,6 +52,27 @@
 
 @push('scripts')
     <script>
+        function formatRupiah(angka, prefix) {
+            var number_string = angka.toString().replace(/[^,\d]/g, ''),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return prefix == undefined ? rupiah : (rupiah ? +rupiah : '');
+        }
+
+        $(document).on('input', '#harga', function(){
+            value = $(this).val();
+            $(this).val( formatRupiah(value));
+        })
+
         $(document).ready(function() {
             dataTable = $('#table-produk').DataTable({
                 order: [[0, 'desc']],
@@ -217,6 +239,54 @@
                                 },
                                 title: 'Success',
                                 text: "Data telah terhapus",
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+
+                            $('#table-produk').DataTable().ajax.reload();
+                        }
+                    });
+                    return false;
+                }
+            })
+        })
+
+        $(document).on('click', '#get-data-api', function(){
+            Swal.fire({
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                },
+                title: 'Apakah anda yakin?',
+                text: "Anda akan menghapus semua data dan mengganti data terbaru dari API",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yakin'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var token = $("meta[name='csrf-token']").attr("content");
+                    var url = "{{ route('get.data.api') }}"
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        data: {
+                            _token: token,
+                        },
+                        error: function(err) {
+                            Swal.fire(
+                                'Error!',
+                                err.responseJSON.message,
+                                'error'
+                            );
+
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                customClass: {
+                                    confirmButton: 'btn btn-danger',
+                                },
+                                title: 'Success',
+                                text: "Data telah di refresh",
                                 icon: 'success',
                                 confirmButtonText: 'OK'
                             });

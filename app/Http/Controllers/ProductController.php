@@ -8,21 +8,21 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Js;
 use Yajra\DataTables\Facades\DataTables;
-
+use Illuminate\Support\Str;
 class ProductController extends Controller
 {
     public function getDataFromAPI() {
         try {
-            $url = 'https://recruitment.fastprint.co.id/tes/api_tes_programmer';
+            $data = $this->getUsernamePassword();
 
+            $url = 'https://recruitment.fastprint.co.id/tes/api_tes_programmer';
             $postToApi = Http::asForm()->post($url, [
-                'username' => 'tesprogrammer280623C09',
-                'password' => 'c69aa638188e880e42042d86448996e8',
+                'username' => $data['username'],
+                'password' => $data['password'],
             ]);
 
             $response = $postToApi->json();
-
-            $truncateProduk = Product::truncate();
+            $truncate = Product::truncate();
             foreach($response['data'] as $item) {
                 $produk = Product::create([
                     'id_produk' => $item['id_produk'],
@@ -44,6 +44,26 @@ class ProductController extends Controller
                 'message' => $th->getMessage()
             ],500);
         }
+    }
+
+    public function getUsernamePassword(){
+        $url = 'https://recruitment.fastprint.co.id/tes/api_tes_programmer';
+        $postToApi = Http::asForm()->post($url, [
+            'username' => 'tesprogrammer280623C09',
+            'password' => 'c69aa638188e880e42042d86448996e8',
+        ]);
+
+        $usernameHeader = $postToApi->header('X-Credentials-Username');
+        $username = explode(' (username', $usernameHeader);
+        $username = $username[0];
+
+
+        $data = [
+            'username' => $username,
+            'password' => md5('bisacoding-'.date_format(now(),"d-m-y"))
+        ];
+
+        return $data;
     }
 
     public function showProducts() {
@@ -83,11 +103,13 @@ class ProductController extends Controller
         try {
             $rules = [
                 'nama_produk' => 'required',
+                'kategori' => 'required',
                 'harga' => 'numeric'
             ];
 
             $message = [
                 'nama_produk.required' => 'Nama produk harus di isi',
+                'kategori.required' => 'Kategori harus di isi',
                 'harga.numeric' => 'Harap isikan harga dengan Angka'
             ];
 
@@ -102,7 +124,7 @@ class ProductController extends Controller
             $produk = Product::create([
                 'nama_produk' => $request->nama_produk,
                 'kategori' => $request->kategori,
-                'harga' => $request->harga,
+                'harga' => Str::remove('.', $request->harga),
                 'status' => $request->status ?? 'bisa dijual'
             ]);
 
@@ -130,11 +152,13 @@ class ProductController extends Controller
 
             $rules = [
                 'nama_produk' => 'required',
+                'kategori' => 'required',
                 'harga' => 'numeric'
             ];
 
             $message = [
                 'nama_produk.required' => 'Nama produk harus di isi',
+                'kategori.required' => 'Kategori harus di isi',
                 'harga.numeric' => 'Harap isikan harga dengan Angka'
             ];
 
@@ -158,7 +182,7 @@ class ProductController extends Controller
             $update = Product::where('id_produk', $id)->update([
                 'nama_produk'   => $request->nama_produk,
                 'kategori'      => $request->kategori,
-                'harga'         => $request->harga,
+                'harga'         => Str::remove('.', $request->harga),
             ]);
 
             return response()->json([
