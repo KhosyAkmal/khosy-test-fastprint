@@ -84,7 +84,7 @@ class ProductController extends Controller
                         data-id="'. $item->id_produk.'"
                         data-nama="'.$item->nama_produk.'"
                         data-kategori="'.$item->kategori.'"
-                        data-harga="'.$item->harga.'"
+                        data-harga="'.number_format( $item->harga ,0,",",".").'"
                         >Edit</button>
                         <button class="btn btn-danger btn-action btn-sm m-2 btn-delete" data-id="'. $item->id_produk .'" >Hapus</button>
                     </div>
